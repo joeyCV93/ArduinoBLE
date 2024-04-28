@@ -536,6 +536,65 @@ uint16_t ATTClass::mtu(uint16_t handle) const
   return 23;
 }
 
+//PAIRING STAGE 1A
+int ATTClass::attemptPairing(uint16_t handle)
+{
+    for (int i = 0; i < ATT_MAX_PEERS; i++) {
+        if (_peers[i].connectionHandle == handle) {
+#ifdef _BLE_PAIRING_TRACE_
+            Serial.println("Set Peer as NOT the initiator of the pairing operations as we have inititated it");
+#endif
+            _peers[i].isPairingInitiator = false;
+        }
+    }
+
+#ifdef _BLE_PAIRING_TRACE_
+    Serial.print("Sending Pairing Request to HCI Layer");
+    Serial.println(handle);
+#endif
+
+    return HCI.attemptPairing(handle);
+
+}
+
+bool ATTClass::getPeerPairingInitiatorRelationship(uint16_t connectionHandle){
+    for(int i=0; i<ATT_MAX_PEERS; i++){
+        if(_peers[i].connectionHandle != connectionHandle){
+            continue;
+        }
+
+        return _peers[i].isPairingInitiator;
+    }
+    return false;
+}
+
+void ATTClass::getPeerPairingConfirmValue(uint16_t connectionHandle, uint16_t confirmValueBuffer[16]){
+    for(int i=0; i<ATT_MAX_PEERS; i++){
+        if(_peers[i].connectionHandle != connectionHandle){
+            continue;
+        }
+        memcpy(confirmValueBuffer, _peers[i].peerPairingConfirmValue, sizeof(_peers[i].peerPairingConfirmValue));
+    }
+}
+
+void ATTClass::setPeerPairingConfirmValue(uint16_t connectionHandle, uint16_t confirmValueBuffer[16]){
+    for(int i=0; i<ATT_MAX_PEERS; i++){
+        if(_peers[i].connectionHandle != connectionHandle){
+            continue;
+        }
+        memcpy(_peers[i].peerPairingConfirmValue, &confirmValueBuffer, sizeof(_peers[i].peerPairingConfirmValue));
+    }
+}
+
+void ATTClass::setLocalIOCap(uint8_t IOCap[3]){
+memcpy(_localIOCap, IOCap, 3);
+}
+
+void ATTClass::getLocalIOCap(uint8_t IOCap[3]){
+memcpy(IOCap, _localIOCap, 3);
+}
+
+
 bool ATTClass::disconnect()
 {
   int numDisconnects = 0;

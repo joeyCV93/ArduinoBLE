@@ -25,6 +25,8 @@
 
 #include "BLEDevice.h"
 
+// #define _BLE_PAIRING_TRACE_
+
 BLEDevice::BLEDevice() :
   _advertisementTypeMask(0),
   _eirDataLength(0),
@@ -44,6 +46,47 @@ BLEDevice::BLEDevice(uint8_t addressType, uint8_t address[6]) :
 
 BLEDevice::~BLEDevice()
 {
+}
+
+// PAIRING STAGE 1
+bool BLEDevice::attemptPairing()
+{
+#if defined(_BLE_TRACE_) || defined(_BLE_PAIRING_TRACE_)
+    Serial.println("*** STARTING STAGE 1 ***");
+#endif
+    if (!connected())
+    {
+#ifdef _BLE_PAIRING_TRACE_
+        Serial.println("Unable to pair with device until it has been connected to!");
+#endif
+        return false;
+    }
+
+    uint16_t connHandle = connectionHandle(peerBdaddrType, peerBdaddr);
+    if (connHandle == 0xffff) {
+
+#ifdef _BLE_PAIRING_TRACE_
+        Serial.println("No Connection handle was returned for the device to pair to!");
+#endif
+        return false;
+    }
+
+    if (!exchangeMtu(connHandle)) {
+
+#ifdef _BLE_PAIRING_TRACE_
+        Serial.println("There was an error in exchanging MTU with the peer device!");
+#endif
+        return false;
+    }
+
+#ifdef _BLE_PAIRING_TRACE_
+    Serial.print("Device with handle: ");
+    Serial.print(connHandle);
+    Serial.println("is connected and MTU has been exchanged. Beginning pairing operation in ATT layer...");
+#endif
+
+    return ATT.attemptPairing(connHandle)
+
 }
 
 void BLEDevice::poll()

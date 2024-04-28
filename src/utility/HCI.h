@@ -127,6 +127,7 @@ public:
   uint8_t DHKey[32];
   uint8_t localAddr[6];
   uint8_t LTK[16];
+  uint8_t MacKey[16];
   virtual int getLTK(uint8_t* address, uint8_t* LTK);
   virtual int storeLTK(uint8_t* address, uint8_t* LTK);
   virtual int storeIRK(uint8_t* address, uint8_t* IRK);
@@ -136,6 +137,7 @@ public:
   int (*_getLTK)(uint8_t*, uint8_t*) = 0;
   void (*_displayCode)(uint32_t confirmationCode) = 0;
   bool (*_binaryConfirmPairing)() = 0;
+  virtual bool attemptPairing(uint16_t handle);
 
 private:
 

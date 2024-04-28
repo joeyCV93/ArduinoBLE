@@ -41,6 +41,7 @@ public:
   BLEDevice();
   virtual ~BLEDevice();
 
+  virtual bool attemptPairing();
   virtual void poll();
   virtual void poll(unsigned long timeout);
 

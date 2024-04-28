@@ -78,12 +78,15 @@ public:
 
   virtual void smCalculateLTKandConfirm(uint16_t handle, uint8_t expectedEa[]);
 
-
+  virtual bool initiatePairingRequest(uint16_t handle);
+  virtual void sendRandomValue(uint16_t handle);
+  bool validatePeerConfirmValue(uint16_t connectionHandle);
+  void sendDHKCheck(uint8_t handle);
 private:
   virtual void connectionParameterUpdateRequest(uint16_t handle, uint8_t identifier, uint8_t dlen, uint8_t data[]);
   virtual void connectionParameterUpdateResponse(uint16_t handle, uint8_t identifier, uint8_t dlen, uint8_t data[]);
-
-
+  virtual void handlePairingRequestFromInitiator(uint16_t connectionHandle, L2CAPSignalingHdr l2capSignalingHdr);
+  virtual void handlePairingRequestResponseAsInitiator(uint16_t connectionHandle, L2CAPSignalingHdr l2capSignalingHdr);
 private:
   uint16_t _minInterval;
   uint16_t _maxInterval;
