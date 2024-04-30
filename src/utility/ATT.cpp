@@ -82,7 +82,7 @@
 #define ATT_ECODE_INSUFF_RESOURCES     0x11
 
 // #define _BLE_TRACE_
-
+#define _BLE_PAIRING_TRACE_
 ATTClass::ATTClass() :
   _maxMtu(23),
   _timeout(5000),
@@ -568,21 +568,23 @@ bool ATTClass::getPeerPairingInitiatorRelationship(uint16_t connectionHandle){
     return false;
 }
 
-void ATTClass::getPeerPairingConfirmValue(uint16_t connectionHandle, uint16_t confirmValueBuffer[16]){
+void ATTClass::getPeerPairingConfirmValue(uint16_t connectionHandle, uint8_t confirmValueBuffer[16]){
     for(int i=0; i<ATT_MAX_PEERS; i++){
         if(_peers[i].connectionHandle != connectionHandle){
             continue;
         }
         memcpy(confirmValueBuffer, _peers[i].peerPairingConfirmValue, sizeof(_peers[i].peerPairingConfirmValue));
+        break;
     }
 }
 
-void ATTClass::setPeerPairingConfirmValue(uint16_t connectionHandle, uint16_t confirmValueBuffer[16]){
+void ATTClass::setPeerPairingConfirmValue(uint16_t connectionHandle, uint8_t confirmValueBuffer[16]){
     for(int i=0; i<ATT_MAX_PEERS; i++){
         if(_peers[i].connectionHandle != connectionHandle){
             continue;
         }
-        memcpy(_peers[i].peerPairingConfirmValue, &confirmValueBuffer, sizeof(_peers[i].peerPairingConfirmValue));
+        memcpy(_peers[i].peerPairingConfirmValue, confirmValueBuffer, sizeof(_peers[i].peerPairingConfirmValue));
+        break;
     }
 }
 

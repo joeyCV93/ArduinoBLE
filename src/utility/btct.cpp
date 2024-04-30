@@ -45,7 +45,7 @@ int BluetoothCryptoToolbox::f5(uint8_t DHKey[],uint8_t N_master[], uint8_t N_sla
     uint8_t length[2];
     length[0] = 0x01;
     length[1] = 0x00;
-#ifdef _BLE_TRACE_
+#if defined(_BLE_TRACE_) || defined(_BLE_PAIRING_TRACE_)
     Serial.print("Starting f5 calculation");
     Serial.print("Using DHKey:  ");
     printBytes(DHKey, DHKEY_LENGTH);
@@ -89,6 +89,24 @@ int BluetoothCryptoToolbox::f5(uint8_t DHKey[],uint8_t N_master[], uint8_t N_sla
 }
 int BluetoothCryptoToolbox::f6(uint8_t W[], uint8_t N1[],uint8_t N2[],uint8_t R[], uint8_t IOCap[], uint8_t A1[], uint8_t A2[], uint8_t Ex[])
 {
+#if defined(_BLE_TRACE_) || defined(_BLE_PAIRING_TRACE_)
+    Serial.println("Starting f6 calculation DEBUG");
+    Serial.println("Using W:  ");
+    printBytes(W, 16);
+    Serial.println("Using N1: ");
+    printBytes(N1, 16);
+    Serial.println("Using N2:  ");
+    printBytes(N2, 16);
+    Serial.println("Using R:  ");
+    printBytes(R, 16);
+    Serial.println("Using IOCap:  ");
+    printBytes(IOCap, 3);
+    Serial.println("Using A1: ");
+    printBytes(A1, 7);
+    Serial.println("Using A2:  ");
+    printBytes(A2, 7);
+#endif
+
     struct __attribute__ ((packed)) F6Input
     {
         uint8_t N1[16];

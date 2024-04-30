@@ -53,6 +53,7 @@
 
 class L2CAPSignalingClass {
 public:
+
   L2CAPSignalingClass();
   virtual ~L2CAPSignalingClass();
 
@@ -85,8 +86,8 @@ public:
 private:
   virtual void connectionParameterUpdateRequest(uint16_t handle, uint8_t identifier, uint8_t dlen, uint8_t data[]);
   virtual void connectionParameterUpdateResponse(uint16_t handle, uint8_t identifier, uint8_t dlen, uint8_t data[]);
-  virtual void handlePairingRequestFromInitiator(uint16_t connectionHandle, L2CAPSignalingHdr l2capSignalingHdr);
-  virtual void handlePairingRequestResponseAsInitiator(uint16_t connectionHandle, L2CAPSignalingHdr l2capSignalingHdr);
+  virtual void handlePairingRequestFromInitiator(uint16_t connectionHandle,  uint8_t data[]);
+  virtual void handlePairingRequestResponseAsInitiator(uint16_t connectionHandle,  uint8_t data[]);
 private:
   uint16_t _minInterval;
   uint16_t _maxInterval;

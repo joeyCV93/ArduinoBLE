@@ -57,6 +57,7 @@ hasService	KEYWORD2
 service	KEYWORD2
 characteristicCount	KEYWORD2
 characteristic	KEYWORD2
+attemptPairing	KEYWORD2
 
 setAdvertisedServiceUuid	KEYWORD2
 setManufacturerData	KEYWORD2

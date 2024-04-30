@@ -25,7 +25,7 @@
 #include "HCI.h"
 #include "bitDescriptions.h"
 // #define _BLE_TRACE_
-
+#define _BLE_PAIRING_TRACE_
 
 #define HCI_COMMAND_PKT   0x01
 #define HCI_ACLDATA_PKT   0x02
@@ -1227,6 +1227,11 @@ void HCIClass::handleEventPkt(uint8_t /*plen*/, uint8_t pdata[]) {
                     memcpy(pairingPublicKey.publicKey, evtReadLocalP256Complete->localPublicKey, 64);
                     memcpy(localPublicKeyBuffer, evtReadLocalP256Complete->localPublicKey, 64);
 
+#if defined(_BLE_TRACE_) || defined(_BLE_PAIRING_TRACE_)
+                    Serial.println("Setting local public key buffer as: ");
+                    btct.printBytes(evtReadLocalP256Complete->localPublicKey, sizeof(evtReadLocalP256Complete->localPublicKey));
+#endif
+
                     // Send the local public key to the remote
                     uint16_t connectionHandle = ATT.getPeerEncrptingConnectionHandle();
                     if (connectionHandle > ATT_MAX_PEERS) {
@@ -1311,26 +1316,28 @@ void HCIClass::handleEventPkt(uint8_t /*plen*/, uint8_t pdata[]) {
                     uint8_t DHKey[32];
                 } *evtLeDHKeyComplete = (EvtLeDHKeyComplete *) &pdata[sizeof(HCIEventHdr)];
                 if (evtLeDHKeyComplete->status == 0x0) {
-#ifdef _BLE_TRACE_
+#if defined(_BLE_TRACE_) || defined(_BLE_PAIRING_TRACE_)
                     Serial.println("DH key generated");
 #endif
                     uint16_t connectionHandle = ATT.getPeerEncrptingConnectionHandle();
                     if (connectionHandle > ATT_MAX_PEERS) {
-#ifdef _BLE_TRACE_
+#if defined(_BLE_TRACE_) || defined(_BLE_PAIRING_TRACE_)
                         Serial.println("Failed to find connection handle DH key check");
 #endif
                         break;
                     }
-                    if (ATT.getPeerPairingInitiatorRelationship())
-                    {
+                    if (ATT.getPeerPairingInitiatorRelationship(connectionHandle)) {
 
-                        for (int i = 0; i < 32; i++) DHKey[31 - i] = evtLeDHKeyComplete->DHKey[i];
+                        for (int i = 0; i < 32; i++){
+                            DHKey[31 - i] = evtLeDHKeyComplete->DHKey[i];
+                        }
 
-#ifdef _BLE_TRACE_
+#if defined(_BLE_TRACE_)
                         Serial.println("Stored our DHKey:");
                     btct.printBytes(DHKey,32);
 #endif
-                        uint8_t encryption = ATT.getPeerEncryption(connectionHandle) | PEER_ENCRYPTION::DH_KEY_CALULATED;
+                        uint8_t encryption =
+                                ATT.getPeerEncryption(connectionHandle) | PEER_ENCRYPTION::DH_KEY_CALULATED;
                         ATT.setPeerEncryption(connectionHandle, encryption);
 
                         if ((encryption & PEER_ENCRYPTION::RECEIVED_DH_CHECK) > 0) {
@@ -1344,9 +1351,7 @@ void HCIClass::handleEventPkt(uint8_t /*plen*/, uint8_t pdata[]) {
                             Serial.println("Waiting on other DHKey check before calculating.");
 #endif
                         }
-                    }
-                    else
-                    {
+                    } else {
                         // PAIRING STAGE 7
 #if defined(_BLE_TRACE_) || defined(_BLE_PAIRING_TRACE_)
                         Serial.println("*** STARTING STAGE 7 ***");
@@ -1359,22 +1364,16 @@ void HCIClass::handleEventPkt(uint8_t /*plen*/, uint8_t pdata[]) {
 
 #if defined(_BLE_TRACE_) || defined(_BLE_PAIRING_TRACE_)
                         Serial.print("DHK Stored as: ");
-                   btct.printBytes(DHKey, sizeof(DHKey))
+                        btct.printBytes(DHKey, sizeof(DHKey));
 #endif
-                        uint8_t encryption = ATT.getPeerEncryption(connectionHandle) | PEER_ENCRYPTION::DH_KEY_CALULATED;
-                        ATT.setPeerEncryption(connectionHandle, encryption);
 
+                        ATT.setPeerEncryption(connectionHandle, ATT.getPeerEncryption(connectionHandle) |
+                                                                PEER_ENCRYPTION::DH_KEY_CALULATED);
 #if defined(_BLE_TRACE_) || defined(_BLE_PAIRING_TRACE_)
-                        Serial.println("Set Peer Encryption to DH_KEY_CALULATED");
+                        Serial.print("Set Peer encryption : DHK KEY CALCULATED");
 #endif
-                        }
-
-                    //SEND DHK Check
-                    L2CAPSignaling.sendDHKCheck(connectionHandle);
-                    HCI.poll();
                     }
-
-                } else {
+                }else {
 #ifdef _BLE_TRACE_
                     Serial.print("Key generation error: 0x");
                     Serial.println(evtLeDHKeyComplete->status, HEX);
@@ -1388,6 +1387,7 @@ void HCIClass::handleEventPkt(uint8_t /*plen*/, uint8_t pdata[]) {
 #endif
             }
         }
+    }
     else {
 #ifdef _BLE_TRACE_
         Serial.println("[Info] Unhandled event");
@@ -1522,8 +1522,14 @@ bool HCIClass::attemptPairing(uint16_t handle) {
         Serial.print("Pairing Request sent. Polling for new responses...");
     Serial.println(handle);
 #endif
-        poll();
+        for (unsigned long start = millis(); (millis() - start) < 10000;) {
+            poll();
+        }
+
+        return true;
     }
+
+    return false;
 }
 
 #if !defined(FAKE_HCI)

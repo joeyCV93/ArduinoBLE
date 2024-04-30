@@ -25,7 +25,7 @@
 
 #include "BLEDevice.h"
 
-// #define _BLE_PAIRING_TRACE_
+#define _BLE_PAIRING_TRACE_
 
 BLEDevice::BLEDevice() :
   _advertisementTypeMask(0),
@@ -62,7 +62,7 @@ bool BLEDevice::attemptPairing()
         return false;
     }
 
-    uint16_t connHandle = connectionHandle(peerBdaddrType, peerBdaddr);
+    uint16_t connHandle = ATT.connectionHandle(_addressType, _address);
     if (connHandle == 0xffff) {
 
 #ifdef _BLE_PAIRING_TRACE_
@@ -71,7 +71,7 @@ bool BLEDevice::attemptPairing()
         return false;
     }
 
-    if (!exchangeMtu(connHandle)) {
+    if (!ATT.exchangeMtu(connHandle)) {
 
 #ifdef _BLE_PAIRING_TRACE_
         Serial.println("There was an error in exchanging MTU with the peer device!");
@@ -85,7 +85,7 @@ bool BLEDevice::attemptPairing()
     Serial.println("is connected and MTU has been exchanged. Beginning pairing operation in ATT layer...");
 #endif
 
-    return ATT.attemptPairing(connHandle)
+    return ATT.attemptPairing(connHandle);
 
 }
 

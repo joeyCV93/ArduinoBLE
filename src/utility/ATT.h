@@ -55,6 +55,8 @@ public:
 
     virtual ~ATTClass();
 
+    virtual bool exchangeMtu(uint16_t connectionHandle);
+
     virtual void setLocalIOCap(uint8_t IOCap[3]);
 
     virtual void getLocalIOCap(uint8_t IOCap[3]);
@@ -63,9 +65,9 @@ public:
 
     virtual bool getPeerPairingInitiatorRelationship(uint16_t connectionHandle);
 
-    virtual void getPeerPairingConfirmValue(uint16_t connectionHandle, uint16_t confirmValueBuffer[16]);
+    virtual void getPeerPairingConfirmValue(uint16_t connectionHandle, uint8_t confirmValueBuffer[16]);
 
-    virtual void setPeerPairingConfirmValue(uint16_t connectionHandle, uint16_t confirmValueBuffer[16]);
+    virtual void setPeerPairingConfirmValue(uint16_t connectionHandle, uint8_t confirmValueBuffer[16]);
 
     virtual void setMaxMtu(uint16_t maxMtu);
 
@@ -199,8 +201,6 @@ private:
     virtual void handleCnf(uint16_t connectionHandle, uint8_t dlen, uint8_t data[]);
 
     virtual void sendError(uint16_t connectionHandle, uint8_t opcode, uint16_t handle, uint8_t code);
-
-    virtual bool exchangeMtu(uint16_t connectionHandle);
 
     virtual bool discoverServices(uint16_t connectionHandle, BLERemoteDevice *device, const char *serviceUuidFilter);
 
