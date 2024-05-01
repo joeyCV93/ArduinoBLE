@@ -25,6 +25,7 @@ unsigned char const_Rb[16] = {
 #define ADDR_LEN 6
 #define LEN_LTK 16
 #define LEN_MAC_KEY 16
+#define _BLE_PAIRING_TRACE_
 
 void BluetoothCryptoToolbox::printBytes(uint8_t bytes[], uint8_t length){
     for(int i=0; i<length; i++){
@@ -50,9 +51,9 @@ int BluetoothCryptoToolbox::f5(uint8_t DHKey[],uint8_t N_master[], uint8_t N_sla
     Serial.print("Using DHKey:  ");
     printBytes(DHKey, DHKEY_LENGTH);
     Serial.print("Using N_Master: ");
-    printBytes(N_master, N_LEN);
+    printBytes(N_master, 7);
     Serial.print("Using N_Slave:  ");
-    printBytes(N_slave, N_LEN);
+    printBytes(N_slave, 7);
 
     Serial.println("Using BD_ADDR_MASTER: ");
     printBytes(BD_ADDR_master, ADDR_LEN);
@@ -155,6 +156,85 @@ void BluetoothCryptoToolbox::testAh()
     printBytes(&expected_final[3], 3);
     Serial.print("Actual     : ");
     printBytes(ourResult, 3);
+}
+
+void BluetoothCryptoToolbox::testf5(uint8_t* MacKey)
+{
+
+    uint8_t DHKey[32] = {0xec, 0x02, 0x34, 0xa3, 0x57, 0xc8, 0xad, 0x05, 0x34, 0x10, 0x10, 0xa6, 0x0a, 0x39, 0x7d, 0x9b, 0x99, 0x79, 0x6b, 0x13, 0xb4, 0xf8, 0x66, 0xf1, 0x86, 0x8d, 0x34, 0xf3, 0x73, 0xbf, 0xa6, 0x98};
+    uint8_t N1[16] = {0xd5, 0xcb, 0x84, 0x54, 0xd1, 0x77, 0x73, 0x3e, 0xff, 0xff, 0xb2, 0xec, 0x71, 0x2b, 0xae, 0xab};
+    uint8_t N2[16] = {0xa6, 0xe8, 0xe7, 0xcc, 0x25, 0xa7, 0x5f, 0x6e, 0x21, 0x65, 0x83, 0xf7, 0xff, 0x3d, 0xc4, 0xcf};
+    uint8_t A1[7] = {0x00, 0x56, 0x12, 0x37, 0x37, 0xbf, 0xce};
+    uint8_t A2[7] = {0x00, 0xa7, 0x13, 0x70, 0x2d, 0xcf, 0xc1};
+    uint8_t LTK[16];
+
+    //Expected MacKey
+    uint8_t expectedMacKey[16] = {0x29, 0x65, 0xf1, 0x76, 0xa1, 0x08, 0x4a, 0x02, 0xfd, 0x3f, 0x6a, 0x20, 0xce, 0x63, 0x6e, 0x20};
+
+//Expected LTK
+    uint8_t expectedLTK[16] = {0x69, 0x86, 0x79, 0x11, 0x69, 0xd7, 0xcd, 0x23, 0x98, 0x05, 0x22, 0xb5, 0x94, 0x75, 0x0a, 0x38};
+
+//Perform f5 function
+    BluetoothCryptoToolbox::f5(DHKey, N1, N2, A1, A2, MacKey, LTK);
+
+// After the function call, compare the calculated MacKey and LTK with the expected values
+    if(memcmp(MacKey, expectedMacKey, sizeof(MacKey)) == 0) {
+        Serial.println("MacKey: Pass");
+    } else {
+        Serial.println("MacKey: Fail");
+        // print out as hexadecimal values
+        Serial.println("Expected MacKey:");
+        printBytes(expectedMacKey, sizeof(expectedMacKey));
+        Serial.println();
+        Serial.println("Calculated MacKey:");
+        printBytes(MacKey, sizeof(MacKey));
+        Serial.println();
+    }
+
+    if(memcmp(LTK, expectedLTK, sizeof(LTK)) == 0){
+        Serial.println("LTK: Pass");
+    } else {
+        Serial.println("LTK: Fail");
+        // print out as hexadecimal values
+        Serial.println("Expected LTK:");
+        printBytes(expectedLTK, sizeof(expectedLTK));
+        Serial.println();
+        Serial.println("Calculated LTK:");
+        printBytes(LTK, sizeof(LTK));
+        Serial.println();
+    }
+}
+
+void BluetoothCryptoToolbox::testf6(uint8_t* MacKey)
+{
+    uint8_t R[16] = {0x12, 0xa3, 0x34, 0x3b, 0xb4, 0x53, 0xbb, 0x54, 0x08, 0xda, 0x42, 0xd2, 0x0c, 0x2d, 0x0f, 0xc8};
+    uint8_t N1[16] = {0xd5, 0xcb, 0x84, 0x54, 0xd1, 0x77, 0x73, 0x3e, 0xff, 0xff, 0xb2, 0xec, 0x71, 0x2b, 0xae, 0xab};
+    uint8_t N2[16] = {0xa6, 0xe8, 0xe7, 0xcc, 0x25, 0xa7, 0x5f, 0x6e, 0x21, 0x65, 0x83, 0xf7, 0xff, 0x3d, 0xc4, 0xcf};
+    uint8_t A1[7] = {0x00, 0x56, 0x12, 0x37, 0x37, 0xbf, 0xce};
+    uint8_t A2[7] = {0x00, 0xa7, 0x13, 0x70, 0x2d, 0xcf, 0xc1};
+    uint8_t IoCap[3]  = {0x01, 0x01, 0x02};
+    uint8_t Result[16];
+    //Expected MacKey
+    uint8_t ExpectedResult[16] = {0xe3, 0xc4, 0x73, 0x98, 0x9c, 0xd0, 0xe8, 0xc5, 0xd2, 0x6c, 0x0b, 0x09, 0xda, 0x95, 0x8f, 0x61};
+
+//Perform f5 function
+   f6(MacKey, N1, N2, R, IoCap ,A1, A2, Result);
+
+// After the function call, compare the calculated MacKey and LTK with the expected values
+    if(memcmp(Result, ExpectedResult, sizeof(Result)) == 0) {
+        Serial.println("Result: Pass");
+    } else {
+        Serial.println("Result: Fail");
+        // print out as hexadecimal values
+        Serial.println("Expected Result:");
+        printBytes(ExpectedResult, sizeof(ExpectedResult));
+        Serial.println();
+        Serial.println("Calculated Result:");
+        printBytes(Result, sizeof(Result));
+        Serial.println();
+    }
+
+
 }
 
 int BluetoothCryptoToolbox::g2(uint8_t U[], uint8_t V[], uint8_t X[], uint8_t Y[], uint8_t out[4])

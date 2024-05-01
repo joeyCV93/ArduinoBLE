@@ -16,10 +16,11 @@ public:
     int g2(uint8_t U[], uint8_t V[], uint8_t X[], uint8_t Y[], uint8_t out[4]);
     int ah(uint8_t k[16], uint8_t r[3], uint8_t result[3]);
     void test();
-    void testF5();
-    void testF6();
+
     void testAh();
     void testg2();
+    void testf5(uint8_t* pMacKey);
+    void testf6(uint8_t* MacKey);
 private:
     int AES_128(uint8_t key[], uint8_t data_in[], uint8_t data_out[]);
     void leftshift_onebit(unsigned char *input,unsigned char *output);
