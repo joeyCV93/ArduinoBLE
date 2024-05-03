@@ -1530,6 +1530,7 @@ bool HCIClass::attemptPairing(uint16_t handle) {
     }
 
     return false;
+
 }
 
 #if !defined(FAKE_HCI)

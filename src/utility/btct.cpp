@@ -51,14 +51,14 @@ int BluetoothCryptoToolbox::f5(uint8_t DHKey[],uint8_t N_master[], uint8_t N_sla
     Serial.print("Using DHKey:  ");
     printBytes(DHKey, DHKEY_LENGTH);
     Serial.print("Using N_Master: ");
-    printBytes(N_master, 7);
+    printBytes(N_master, 16);
     Serial.print("Using N_Slave:  ");
-    printBytes(N_slave, 7);
+    printBytes(N_slave, 16);
 
     Serial.println("Using BD_ADDR_MASTER: ");
-    printBytes(BD_ADDR_master, ADDR_LEN);
+    printBytes(BD_ADDR_master, 7);
     Serial.println("Using BD_ADDR_SLAVE:  ");
-    printBytes(BD_ADDR_slave, ADDR_LEN);
+    printBytes(BD_ADDR_slave, 7);
 #endif
 
     uint8_t T[16];
